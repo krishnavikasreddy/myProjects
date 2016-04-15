@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#This program displays all global variables in shel script
+
+echo "The name of the current user ".$USER
+
+echo "hello world"
+
+echo "how are u?"
+
+echo "how is this"
