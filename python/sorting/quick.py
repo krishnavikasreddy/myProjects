@@ -1,6 +1,5 @@
-
-
-
+import random
+import time
 def QuickSort(num,low,high):
     if(low<high):
         num,index=partition(num,low,high)
@@ -9,22 +8,21 @@ def QuickSort(num,low,high):
     return num
 
 def partition(num,low,high):
-    print num
-    print "_____"
     pivot=num[low]
-    i=low
-
+    i=low+1
     for j in range(low+1,high+1):
         if num[j]<pivot:
             temp=num[j]
             num[j]=num[i]
             num[i]=temp
             i=i+1
-            print num
-            print "___"
-
-    print num,i
-    return num,i
+    temp=num[i-1]
+    num[i-1]=pivot
+    num[low]=temp
+    return num,i-1
+        
+    
+   
 
 """def partition(num,low,high):
     print "-----"
@@ -45,8 +43,11 @@ def partition(num,low,high):
     print num
     return num,i"""
 
-n=[5,6,3,4,0]
-print partition(n,0,len(n)-1)
+n=50
+num=[random.randrange(n) for x in range(n)]
+i1=time.time()
+print(QuickSort(num,0,len(num)-1))
+print (time.time()-i1)
 
 
 
