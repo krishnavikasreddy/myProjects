@@ -23,12 +23,13 @@
 (setq frame-title-format "%b")
 
 
+(add-hook 'python-mode-hook
+          (lambda ()
+            (set (make-local-variable 'compile-command)
+                 (concat "python " buffer-file-name))))
 
-(let* ((w (split-window-horizontally))
-	(select-window w)
-	(switch-to-buffer "*compilation*")))
 
-
+(desktop-save-mode 1)
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -46,6 +47,23 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
-
 (tool-bar-mode -1)
+
+(setq org-startup-with-inline-images t)
+(global-visual-line-mode t)
+
+(defun my-org-screenshot ()
+  "Take a screenshot into a time stamped unique-named file in the
+same directory as the org-buffer and insert a link to this file."
+  (interactive)
+  (setq filename
+        (concat
+         (make-temp-name
+          (concat (file-name-nondirectory (buffer-file-name))
+                  "_"
+                  (format-time-string "%Y%m%d_%H%M%S_")) ) ".png"))
+ (call-process "import" nil nil nil filename)
+  (insert (concat "[[./" filename "]]"))
+  (org-display-inline-images))
+(global-set-key (kbd "M-p") 'my-org-screenshot)
+
