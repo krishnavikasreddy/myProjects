@@ -1,0 +1,9 @@
+#include<stdio.h>
+
+int main(void){
+  int i=5;
+  int j=10;
+  printf("Address %d\n",*&i);
+  printf("Address %p\n",&j);
+  return 0;
+}

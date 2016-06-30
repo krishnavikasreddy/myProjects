@@ -1,0 +1,9 @@
+vikas: vikas.o
+
+vikas.o: vikas.c
+	 gcc -c vikas.c
+
+clean: rm vikas
+
+run: ./vikas
+     ./vikas

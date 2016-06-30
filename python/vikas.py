@@ -1,5 +1,8 @@
-import nltk as nt
-import pandas as pd
-import matplotlib as mt
+print("Hello world")
 
-print  "Hello World"
+def vikas():
+    for i in range(1,100):
+        print "vikas"
+
+if __name__== '__main__':
+    vikas()
