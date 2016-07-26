@@ -1,0 +1,22 @@
+const dns = require('dns');
+const net= require('net');
+port=80;
+host="192.168.1.1";
+/*
+dns.lookup("google.com",{family:4,all:true},function(err,address,family){
+    console.log(address);
+});
+*/
+
+var socket = net.createConnection(port, host);
+console.log('Socket created.');
+socket.on('data', function(data) {
+  // Log the response from the HTTP server.
+ console.log('RESPONSE: ' + data);
+}).on('connect', function() {
+  // Manually write an HTTP request.
+  socket.write("GET / HTTP/1.0\r\n\r\n");
+}).on('end', function() {
+  console.log('DONE');
+});
+

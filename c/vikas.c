@@ -1,14 +1,16 @@
 #include<stdio.h>
 
-int main(void){
-  int i=5;
-  char a='a';
-  int *i1= &i;
-  char *a1 = &a;
+int main(char *argv,char *argc){
+  int i[3][3];
+  int **p=i;
 
-  printf("%p\n",a1);
-  (a1)++;
-  printf("%p\n",a1);
-  printf("%d",i);
+  i[0][0]=1;
+  i[0][1]=10;
+  i[0][2]=11;
+  i[1][0]=12;
+
+  printf("\n%p",p);
+  printf("\n%d",*(p+2));
+  
   return 0;
 }
