@@ -1,0 +1,17 @@
+Estimating Energy Efficiency of buildings 
+Krishna Vikas and Manthan Thakkar
+
+Problem Description
+Buildings consume a lot of energy, most of this is used to heat or cool the building.The physical dimensions of the building affects its energy consumption's.We investigate how the physical dimensions of a building affects it heating and cooling load by generating a model and use it to predict the load and discuss of the importance of each factor of the building to conserve energy
+Data
+Our data is pre compiled and is obtained from here.The data is collected independently and contains data related  building dimensions which we will use as predictor variables(referenced as X1 to X8) and two dependent variables, heating and cooling load(referenced as Y1 and Y2).Data is of 768 entries.Preliminary analysis shows that Data does not have N/A values and no significant outliers.Data would be partitioned into two sets(700 entries and 68 entries) with random sampling,one set will be used as training set and other will be used as validation set.
+Our Predictor variables are 8 in number and are collected independently, they include Relative Compactness,Surface Area ,Wall Area ,Roof Area ,Overall Height ,Orientation ,Glazing Area ,Glazing Area Distribution and our Dependent variables are Heating Load ,Cooling Load.Our data is collected with a intuition that all the dependent variables affect our predictor variables.
+Methods 
+To confirm there is association between each dependent variable and all the predictor variables,we will use F-test with 95% significance level to confirm the association.Construct a model using Multi-variable regression to estimate  regression  functions for both the dependent variables.Preliminary analyses suggest that there exists a full dependence among a predictor variable,this requires us to investigate if we need to drop the variable or find another functional form of that variable.We can use residual plots or 3-dimension scatter plots to arrive at conclusion,We will check for validity of assumptions by conducting correlation test for normality and Constancy of error variance using normal probability plots and Brown-Forsythe test.Diagnose the models using residuals plot and propose any interaction effect.
+We will conduct a overall F test to check whether or not there is a relation between Y and the set of X variables.We would then use the model to get the estimate of regression parameters,estimate of mean response and prediction  limits for new observation using the validation data.We would check and comment if each of the estimate of the regression parameter confirms to the real world assumptions and comment on the confidence interval and usefulness of the predicting interval.
+Compute coefficients of partial determination to evaluate and discuss the importance of each predictor variable in  estimation.
+
+
+References
+http://archive.ics.uci.edu/
+

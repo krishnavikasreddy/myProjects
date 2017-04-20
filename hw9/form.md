@@ -1,0 +1,1 @@
+Y<sub>i</sub> = \(\hat{\pi_i}\) = \(\frac{1}{1+e^{-(\beta0+\beta1 X1+\beta2 X2+\beta3 X3)}}\)

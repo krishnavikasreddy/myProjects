@@ -1,0 +1,84 @@
+*Hypothesis*
+- H_0 : \beta_1 = 0
+- H_a : \beta_1 \ne 0
+
+*Parameters*
+- \alpha = 0.01
+- n = 84 [nrow(crimes)]
+
+*F Test*
+- For the given \alpha and n we require that
+  - F* \le F(0.99:1,82) = [qf(0.99,1,82)] = 6.95442 => conclude H_0
+  - F* > F(0.99:1,82) = [qf(0.99,1,82)] = 6.95442 => conclude H_a
+- From anova Table we got F = 16.834 > 6.95442 thus conclude H_a
+
+*Decision*
+- Evidence prove that we can conclude H_a thus we there is a relation between crimes and Education data
+
+
+
+
+- we know that
+  - F* = $\frac{MSR}{MSE}$
+    - MSR = $\frac{SSR}{df_r}$ = $\frac{SSR}{1}$ = b_1^2 \sum(X_i - $\overline{X}$)^2
+    - MSE = s^2{b_1} \sum(X_i - $\overline{X}$)^2
+  - F* = $\frac{b_1^2}{{s^2{b_1}}}$ = (t*)^2
+ 
+- We need to know two points t* represents a two tailed test while as F* is a one tailed test
+  -(t*(1-\alpha/2:n-1))^2 = f*(1-\alpha,1,n-2)
+
+
+*Hypothesis*
+- H_o : \beta_1 = 0
+- H_a : \beta_1 \ne 0
+
+
+- Full model(we reject Null hypothesis => H_a is true => \beta_1 \ne 0)
+  - CrimeRate(Y_i) = \beta_0 + \beta_1 * Education(X_i) + \epsilon_i
+- Reduced Model (We assume that Null Hypothesis is True => \beta_1 = 0)
+  - CrimeRate(Y_i) = \beta_0 + \epsilon_i
+
+** Obtain (1) SSE(F), (2) SSE(R), (3) df F , (4) df R , (5) test statistic F ∗ for the general linear test, (6) decision rule.
+*** SSE(F) = \sum\epsilon_i^2{F} = \sum(Y - \beta_0 - \beta_1 * X_i)^2 = \sum(Y - $\hat{Y}$)^2 = {aModel[2,"Sum Sq"]} = 455273165
+
+*** SSE(R) = \sum\epsilon_i^2{R} = \sum(Y_i- \beta_0)^2 = \sum(Y_i - $\bar{Y})^2 = SSTO = {sum(aModel["Sum Sq"])} = 548736108
+
+*** df_F = we have two variables that determine our Y = \beta_0 and \beta_1 so =  n-2 =84-2 =82
+
+*** df_R = we have only one variable that affect our Y = \beta_0 = n-1 =83
+*** F -test statistic
+- *Hypothesis*
+  - H_0 : \beta_1 = 0 => reduced model is true
+    - H_a : \beta_1 \ne 0 => Full model is true
+  - The error term in the reduced model will always be more than that of the  full model error term, because in the full model \beta_1*X_i can explain some term of deviation
+  - So SSE(F) \le SSE(R)
+    - if the difference between these two is narrow then \beta_1 tends to be 0 else it is not
+  - F* = $\frac{\frac{SSE(R) - SSE(F)}{df_R - df_F}}{\frac{SSE(F)}{df_F}}$
+    - = $\frac{\frac{548736108 - 455273165}{(n-1) -(n -2)}}{\frac{455273165}{n-2}}
+    - 16.833
+*** Decision
+- \alpha = 0.01
+- F(1-\alpha;1,82) = 6.95442
+- If F* \le F(1-\alpha;1,82) then conclude H_0
+- else F* > F(1-\alpha;1,82) then conclude H_a
+
+our F* = 16.833 > 6.95442 so we conclude H_a
+
+* A management trainee in a production department wished to study the relation between weight of rough casting and machining time to produce the finished block. The trainee selected castings so that the weights would be spaced equally apart in the sample and then observed the corresponding machining times. Would you recommend that a regression or a correlation model be used? Explain
+
+- In the regression model it is assumed that X values are known constants and in Co-relation model we assume that Both X and Y are Random in nature.This is the fundamental assumption
+- In the above problem the trainee selected castings so that the observed weights would be spaced equally apart, this means he has control over the weight values and Thus weight is not random in nature
+- Here the student is identifying a Dependent variable and Independent variable - Which is the Ideal case of regression model
+- Thus in the following model it is best to use Regression Model rather than co-relation Model.Co-relation is not so useful when one of the variable is manipulated to fit the needs.
+
+* A student was investigating from a large sample whether variables Y 1 and Y 2 follow a bivariate normal distribution. The student obtained the residuals when regressing Y 1 on Y 2 , and also obtained the residuals when regressing Y 2 on Y 1 , and then prepared a normal probability plot for each set of residuals. Do these two normal probability plots provide sufficient information for determining whether the two variables follow a bivariate normal distribution? Explain.
+
+NOTE: When Y_1 and Y_2 are jointly normally Distributed, we can say that both Y_1 and Y_2 are normally distributed.The converse cannot be said to be true.
+
+when we prepare normal probability plot of each of the residuals what we get is f(Y_2|Y_1) and f(Y_1|Y_2) and from these we get E(Y_2|Y_1) ,\sigma_(2|1) and E(Y_1|Y_2) and \sigma_(1|2)  
+
+But to verify whether a Y_1, Y_2 follow bivariate normal distribution or not we need the following parameters \mu_1, \sigma_1 , \mu_2, \sigma_2 and \rho_12 which we do not have
+
+So we cannot determine from these two normal probability plots if the two variables follow a bivariate normal distribution or not
+
+

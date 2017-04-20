@@ -1,0 +1,265 @@
+---
+title: ''
+author: "Krishna Vikas"
+date: "October 27, 2016"
+output: html_document
+---
+
+## Loading Packages and Data
+```{R}
+library("data.table")
+crimes=fread("crimes.txt")
+setnames(crimes,c("crime","education"))
+```
+
+## Creating the Model
+```{R}
+model=lm(crimes$crime~crimes$education)
+summary(model)
+```
+
+# 1 (Use R) KNNL 2.31
+## Refer to Crime rate Problem 1.28
+### a. Set up the ANOVA table.
+```{R}
+aModel=anova(model)
+aModel
+```
+### b. Carry out the test in Problem 2.30a by means of the F test. Show the numerical equivalence of the two test statistics and decision rules. Is the P-value for the F test the same as that for the t test?
+
+#### Test whether or not there is a linear relation between crime rate and percentage of high school graduates with \alpha = 0.01
+
+**Hypothesis**
+
+1. H<sub>0</sub> : &beta;<sub>1</sub> = 0
+2. H<sub>a</sub> : &beta;<sub>1</sub> &ne; 0
+
+**Parameters**
+
+-   &alpha; = 0.01
+-   n = 84 [nrow(crimes)]
+
+**F Test**
+
+-   For the given &alpha; and n we require that
+    -   F\* &le; F(0.99:1,82) = [qf(0.99,1,82)] = 6.95442 => conclude H<sub>0</sub>
+    -   F\* > F(0.99:1,82) = [qf(0.99,1,82)] = 6.95442 => conclude H<sub>a</sub>
+-   From anova Table we got F = 16.834 > 6.95442 thus conclude H<sub>a</sub>
+
+**Decision**
+
+- Evidence prove that we can conclude H<sub>a</sub> thus we there is a relation between crimes and Education data
+
+- The p value for F test and t-test are the same
+
+##### Show the numerical equivalence of the two test statistics and decision rules.
+
+```{R}
+# Summarize the model
+summary_model=summary(model)
+
+# t value of the crime ~ education model
+t_value=coef(summary_model)[,"t value"]
+t_value
+# f statistic value is 
+aModel[,"F value"][1]
+```
+##### Showing that F value is equal to t value                                                  
+-   we know that
+-   F\* = \(\frac{MSR}{MSE}\)
+ -   MSR = \(\frac{SSR}{df_r}\) = \(\frac{SSR}{1}\) = b<sub>1</sub><sup>2</sup> $\sum$(X<sub>i</sub> - \(\overline{X}\))<sup>2</sup>
+ -   MSE = s<sup>2</sup>{b<sub>1</sub>} $\sum$(X<sub>i</sub> - \(\overline{X}\))<sup>2</sup>
+ -   F\* = \(\frac{b_1^2}{{s^2{b_1}}}\) = (t\*)<sup>2</sup>
+
+-   We need to know two points t\* represents a two tailed test while as F\* is a one tailed test
+ - (t\*(1-$\alpha$/2:n-1))<sup>2</sup> = f\*(1-$\alpha$,1,n-2)
+    
+- so derieving the values from the data we get  
+  - t value = -4.102897
+  - F value = 16.83376
+  => F value = (t value)<sup>2</sup>
+
+##### Decision rules
+
+- since |t*| > |t(0.99,83)| we rejected null hypothesis and said that there is a relation between crimes and education 
+- F test here also gave a similar decision here rejecting the null hypothesis
+
+### c. By how much is the total variation in crime rate reduced when percentage of high school graduates is introduced into the analysis? Is this a relatively large or small reduction?
+- We need to find out how much there is a variation along the regression line compared to total regresssion, this will give us how much the varition in crime rate has been reduced due to education[including education brings us the regression line]           
+
+```{R}
+summary_model$r.squared
+
+#this value is very close to 0 so we can say that this is relatively a small reduction
+```
+### d. Obtain r.
+- r is the square root of R<sup>2</sup>, with a sign as that of slope of the regression line.The sign indicates the movement of correlation in the positive or negative direction. 
+
+```{R}
+sign(model$coefficients[2]) * sqrt(summary_model$r.squared)
+## we can also use cor function (coeffecient of correlation)
+cor(crimes$crime,crimes$education)
+```
+
+-----------------------------
+# 2
+##2.32. Refer to Crime rate Problems 1.28 and 2.30. Suppose that the test in Problem 2.30a is to be carried out by means of a general linear test.
+
+## a. State the full and reduced models.
+-   Full model(we reject Null hypothesis => H<sub>a</sub> is true => &beta;<sub>1</sub> &ne; 0)
+    -   CrimeRate(Y<sub>i</sub>) = &beta;<sub>0</sub> + &beta;<sub>1</sub> \* Education(X<sub>i</sub>) + &epsilon;<sub>i</sub>
+-   Reduced Model (We assume that Null Hypothesis is True => &beta;<sub>1</sub> = 0)
+    -   CrimeRate(Y<sub>i</sub>) = &beta;<sub>0</sub> + &epsilon;<sub>i</sub>
+
+## b. Obtain (1) SSE(F), (2) SSE(R), (3) dfF. (4) dfR, (5) test statistic F* for the general linear test, (6) decision rule.
+
+#### SSE(F) = 
+- &sum;&epsilon;<sub>i</sub><sup>2</sup>{F} = &sum;(Y - &beta;<sub>0</sub> - &beta;<sub>1</sub> \* X<sub>i</sub>)<sup>2</sup> = &sum;(Y - \(\hat{Y}\))<sup>2</sup> = {aModel[2,"Sum Sq"]} = 455273165<a id="orgheadline1"></a>
+
+#### SSE(R) 
+- = &sum;&epsilon;<sub>i</sub><sup>2</sup>{R} = &sum;(Y<sub>i</sub>- &beta;<sub>0</sub>)<sup>2</sup> = &sum;(Y<sub>i</sub> - $\bar{Y})<sup>2</sup> = SSTO = {sum(aModel["Sum Sq"])} = 548736108<a id="orgheadline2"></a>
+
+#### df<sub>F</sub> 
+- = we have two variables that determine our Y = &beta;<sub>0</sub> and &beta;<sub>1</sub> so =  n-2 =84-2 =82<a id="orgheadline3"></a>
+
+#### df<sub>R</sub> 
+- = we have only one variable that affect our Y = &beta;<sub>0</sub> = n-1 =83<a id="orgheadline4"></a>
+
+#### F -test statistic<a id="orgheadline5"></a>
+
+-   **Hypothesis**
+    -   H<sub>0</sub> : &beta;<sub>1</sub> = 0 => reduced model is true
+        -   H<sub>a</sub> : &beta;<sub>1</sub> &ne; 0 => Full model is true
+    -   The error term in the reduced model will always be more than that of the  full model error term, because in the full model &beta;<sub>1</sub>\*X<sub>i</sub> can explain some term of deviation
+    -   So SSE(F) &le; SSE(R)
+        -   if the difference between these two is narrow then &beta;<sub>1</sub> tends to be 0 else it is not
+    -   F\* = \(\frac{\frac{SSE(R) - SSE(F)}{df_R - df_F}}{\frac{SSE(F)}{df_F}}\)
+        -   = $\frac{\frac{548736108 - 455273165}{(n-1) -(n -2)}}{\frac{455273165}{n-2}}$
+        -   16.833
+
+#### Decision<a id="orgheadline6"></a>
+
+-   &alpha; = 0.01
+-   F(1-&alpha;;1,82) = 6.95442
+-   If F\* &le; F(1-&alpha;;1,82) then conclude H<sub>0</sub>
+-   else F\* > F(1-&alpha;;1,82) then conclude H<sub>a</sub>
+
+our F\* = 16.833 > 6.95442 so we conclude H<sub>a</sub>
+
+## c. Are the test statistic F* and the decision rule for the general linear test numerically equivalent to those in Problem 2.30a?
+- we are getting the same value for F of linear test and F test
+- Yes they are equal as we can see that F* we obtained is 16.833 is same as that of the general linear test.
+- In both the cases the decision was to reject Null hypothesis and thus &beta;<sub>1</sub> has some value indicating that therer is a relation between Y(CrimeRate) and X(education)
+
+# A management trainee in a production department wished to study the relation between weight of rough casting and machining time to produce the finished block. The trainee selected castings so that the weights would be spaced equally apart in the sample and then observed the corresponding machining times. Would you recommend that a regression or a correlation model be used? Explain<a id="orgheadline8"></a>
+
+-   In the regression model it is assumed that X values are known constants and in Co-relation model we assume that Both X and Y are Random in nature.This is the fundamental assumption
+-   In the above problem the trainee selected castings so that the observed weights would be spaced equally apart, this means he has control over the weight values and Thus weight is not random in nature
+-   Here the student is identifying a Dependent variable and Independent variable - Which is the Ideal case of regression model
+-   Thus in the following model it is best to use Regression Model rather than co-relation Model.Co-relation is not so useful when one of the variable is manipulated to fit the needs.
+
+# A student was investigating from a large sample whether variables Y 1 and Y 2 follow a bivariate normal distribution. The student obtained the residuals when regressing Y 1 on Y 2 , and also obtained the residuals when regressing Y 2 on Y 1 , and then prepared a normal probability plot for each set of residuals. Do these two normal probability plots provide sufficient information for determining whether the two variables follow a bivariate normal distribution? Explain.<a id="orgheadline10"></a>
+
+NOTE: When Y<sub>1</sub> and Y<sub>2</sub> are jointly normally Distributed, we can say that both Y<sub>1</sub> and Y<sub>2</sub> are normally distributed.The converse cannot be said to be true.
+
+when we prepare normal probability plot of each of the residuals what we get is f(Y<sub>2</sub>|Y<sub>1</sub>) and f(Y<sub>1</sub>|Y<sub>2</sub>) and from these we get E(Y<sub>2</sub>|Y<sub>1</sub>) ,&sigma;<sub>(2|1)</sub> and E(Y<sub>1</sub>|Y<sub>2</sub>) and &sigma;<sub>(1|2)</sub>  
+
+But to verify whether a Y<sub>1</sub>, Y<sub>2</sub> follow bivariate normal distribution or not we need the following parameters &mu;<sub>1</sub>, &sigma;<sub>1</sub> , &mu;<sub>2</sub>, &sigma;<sub>2</sub> and &rho;<sub>12</sub> which we do not have
+
+So we cannot determine from these two normal probability plots if the two variables follow a bivariate normal distribution or not
+
+# 3.15
+```{R}
+chemist=fread("chemist.txt")
+setnames(chemist,c("y","x"))
+```
+### Fit a linear regression function.
+```{R}
+cmodel=lm(chemist)
+cmodel
+```
+### b. Perform the F test to determine whether or not there is lack of fit of a linear regression function; use alpha = .025. State the alternatives, decision rule, and conclusion.
+
+**Hypothesis**
+H<sub>0</sub> : E(Y<sub>i</sub>) = &beta;<sub>0</sub> + &beta;<sub>1</sub> X<sub>i</sub>
+H<sub>a</sub> : E(Y<sub>i</sub>) &ne; &beta;<sub>0</sub> + &beta;<sub>1</sub> X<sub>i</sub>
+
+&alpha; = 0.025
+
+**F Test**
+```{R}
+chemist.reduced=lm(chemist$y~chemist$x)
+summary(chemist.reduced)
+
+chemist.full=lm(chemist$y~factor(chemist$x))
+summary(chemist.full)
+
+anova(chemist.reduced,chemist.full)
+
+#from here we can get the F staticstic  which is 58.603
+# df_F =13
+# df_R =10
+```
+
+### Decision and Conclusion<a id="orgheadline9"></a>
+
+if F\*(F test ) &ge; F(1-&alpha;:df<sub>F</sub>-df<sub>r</sub>, df<sub>r</sub>) =>F(1-0.025:3,10) =F(97.5:3,10) =4.825621 then we conclude alternative hypothesis
+
+=> 58.603 > 4.82 so we reject null hypothesis and conclude alternative hypothesis, so there is a a variable other than X that is affecting the Y values
+
+Thus we conclude that there is a lack of fit with the the linear model(reduced in this case)
+
+### c. Does the test in part (b) indicate what regression function is appropriate when it leads to the conclusion that lack of fit of a linear regression function exists? Explain.
+- the f test indicate that there is a lack of fit for the assumed linear model, indicating that there are other variables that are affecting the value of Y
+- but the fit test in no way explain what these variable are-- and fit test value changes as we change the full model here
+
+# 3.16. Refer to Solution concentration Problem 3.15.
+## a. Prepare a scatter plot of the data. What transformation of Y might you try, using the prototype patterns in Figure 3.15 to achieve constant variance and linearity?
+```{R}
+plot(chemist)
+plot(factor(chemist$x),chemist$y)
+
+## Scatter plot suggests that the data is clustered around the mean of Y for constant X, so log is a effective remedy to expand the data
+```
+- We can use log transformation of data ~ with the observations from the above plots
+
+## b. Use the Box-Cox procedure and standardization (3.36) to find an appropriate power transformation. Evaluate SSE for A = -.2, -.1,0, .1, .2. What transformation of Y is suggested?
+```{R}
+library(MASS)
+boxcox(cmodel,lambda = seq(-2,2,1))
+```
+- From the above plot ~ boxcox suggest that &lambda; is near to zero, this suggests that we should use log transformtions for we know that Y^&lambda; = log(Y) if &lambda; =0
+
+## c. Use the transformation Y' = 10gIO Y and obtain the estimated linear regression function for the transformed data.
+```{R}
+logmodel=lm(log10(chemist$y)~chemist$x)
+logmodel
+```
+## d. Plot the estimated regression line and the transformed data Does the regression line appear to be a good fit to the transformed data?
+```{R}
+# for normal values
+plot(chemist$x,chemist$y)
+abline(cmodel)
+
+# for transformed values
+
+plot(chemist$x,log10(chemist$y))
+abline(logmodel)
+```
+
+- The line appears to be a good fit as it passes through all the distributions of Y
+
+## e. Obtain,the residuals and plot them against the fitted values. Also prepare a normal probability plot. What do your plots show?
+```{R}
+plot(logmodel$fitted.values,logmodel$residuals)
+abline(h=0)
+
+# residual seems to be split equally on either side of Y=0 this is sign of normal distribution, thus indicating a constant variance
+
+qqnorm(logmodel$residuals)
+qqline(logmodel$residuals)
+
+# qqplot indicate that the residuals are normally distributed which is also one of our assumptions
+```
+## f. Express the estimated regression function in the original units.
+log<sub>10</sub>(Y) = 0.6549-0.1954X

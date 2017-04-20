@@ -1,0 +1,385 @@
+---
+title: "hw8"
+author: "Krishna Vikas"
+date: "November 12, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{R}
+library(data.table)
+grocerry=fread("grocerry.txt")
+consultant = fread("consultant.txt")
+apt_test=fread("tests.txt")
+setnames(grocerry,c("y","x1","x2","x3"))
+setnames(consultant,c("y","x1","x2"))
+setnames(apt_test,c("y","x1","x2","x3","x4"))
+apt_test_valdiate=fread("t2.txt")
+setnames(apt_test_valdiate,c("y","x1","x2","x3","x4"))
+
+
+```
+
+#7.4
+## Refer to Grocery retailer Problem 6.9.
+## a. Obtain the analysis of variance table that decomposes the regression sum of squares into extra sums of squares associated with X,; with X 3 , given X,; and with X 2 , given X, and X .
+```{R}
+model1=lm(y~x1+x3+x2,data=grocerry)
+anova(model1)
+## form the above
+## SSE(X_1) = 136366 
+## SSE(X_3|X_1)=2033565
+## SSE(X_2|X_1, X_3)=6675
+```
+## b. Test whether X 2 can be dropped from the regression model given that X, and X 3are retained.Use the F* test statistic and ex = .05. State the alternatives, decision rule, and conclusion.What is the P-value of the test?
+
+### model => Y = B_0 + B_1 X_1 + B_3 X_3 + B_2 X_2 +e
+
+### Hypothesis
+
+H_0 => B2 = 0
+H_a > B2 != 0
+
+### test
+F* = MSE(X_2|X_1, X_3)/MSE(X1,X2,X3)
+ = 6675/20532
+ = 0.325102279
+
+F(0.95,1,48) = 4.042652
+
+F* < F(0.95,1,48)
+Conclude H_0 
+
+P-value = 0.57123
+
+##Decision
+Can remove X_2
+
+## c. Does SSR(X,) +SSR(X2 IX,) equal SSR(X 2 ) +SSR(XtlX2 ) here? Must this always be the case? 
+
+```{R}
+anova(lm(y~x1+x2,data=grocerry))
+## SSR(X_1)+SSR(X_2|X_1) = 136366+5726 = 142092
+
+anova(lm(y~x2+x1,data=grocerry))
+## SSR(X_2)+SSR(X_1|X_2) = 11395+130697 = 142092
+```
+
+This should always be the case because error eplined by one predictor variable is complimented by the other 
+
+#------------------------------------------
+
+#7.13
+## Refer to Grocery retailer Problem 6.9. Calculate R~I' R~2' Rf2' Rh 12' R~2P' R~2113' and R2. Explain what each coefficient measures and interpret your results.
+
+
+```{R}
+#Y~x1
+summary(lm(y~x1,data=grocerry))
+# R^2_Y1 = SSR(X_1)/SSTO = 136366/3025770 = 0.04312
+## amount of error explained by x1
+
+summary(lm(y~x2,data=grocerry))
+# R^2_Y2 = SSR(X_2)/SSTO =11395/3150741 = 0.00361661
+## amount of error explained by x2
+
+summary(lm(x1~x2,data=grocerry))
+#R^2_12  = 0.007207
+## explains the correlation between x1 and x2
+
+## R^2_{Y1|2} = SSR(X_1|X_2)/SSE(X_2)
+## = 130697/3150741 = 0.041481353
+## amount of error explained by x1 after left over in the model with x2
+
+## R^2_{Y2|1} = SSR(X_2|X_1)/SSE(X_1) 
+## =5726/3025770 = 0.001892411
+
+## amount of error explained by x2 after left over in the model with x1
+
+##R^2_{Y2|13} = SSR(X2|X1,X3)/SSR(X1,X3,X2) = 0.006773005
+
+model=lm(y~.,data=grocerry)
+anova(model)
+## R^2 = 0.688
+## this means 68% of total sum of squares is explained by the the regression model(y~X1+X2+X3)
+```
+
+#---------------------------------------------
+#7.17
+## a. Transfonn the variables by means of the correlation transformation (7.44) and fit the standardized regression model (7.45).
+```{R}
+x_matirx=cor(grocerry)[2:4,2:4]
+y_matrix=cor(grocerry)[1,2:4]
+
+b_matrix=solve(x_matirx,y_matrix)
+print(b_matrix)
+```
+## Y=BX =>
+## here B=b,
+
+## b. Calculate the coefficients of determination between all pairs of predictor variables. Is it meaningful here to consider the standardized regression coefficients to reflect the effect of one predictor variable when the others are held constant?
+
+```{R}
+##R12
+summary(lm(x1~x2,data=grocerry))
+
+##R23
+summary(lm(x2~x3,data=grocerry))
+
+##R13
+summary(lm(x1~x3,data=grocerry))
+
+## the co-efficients before standardisation and after standardisation only differ by scale -- hence can be said the same as before
+
+## c. Transform the estimated standardized regression coefficients by means of (7.53) back to the ones for the fitted regression model in the original variables. Verify that they are the same as the ones obtained in Problem 6. lOa.
+b_1=(sd(grocerry$y)/sd(grocerry$x1))*b_matrix[1]
+b_1
+b_2=(sd(grocerry$y)/sd(grocerry$x2))*b_matrix[2]
+b_2
+b_3=(sd(grocerry$y)/sd(grocerry$x3))*b_matrix[3]
+b_3
+b_0=mean(grocerry$y)-(b_1*mean(grocerry$x1))-(b_2*mean(grocerry$x2))-(b_3*mean(grocerry$x3))
+b_0
+lm(y~x1+x2+x3,data=grocerry)
+## they are same
+
+```
+
+# 8.24
+## Plot the sample data for the two populations as a symbolic scatter plot. Does the regression relation appear to be the same for the two populations?
+
+```{R}
+plot(consultant$x1,consultant$y)
+abline(lm(y~x1,data=consultant[consultant$x2==1]),col="green")
+abline(lm(y~x1,data=consultant[consultant$x2==0]),col="red")
+
+## as we can see the regression lines differ,so thr relation is different
+
+## b. Test for identity of the regression functions for dwellings on comer lots and dwellings in other locations; control the risk of Type I error at .05. State the alternatives, decision rule,and conclusion.
+```
+
+\alpha = 0.05
+
+model
+y=b_0+b_1 x1+b_2 x2+b3 x_1*x_2
+
+if there is no relation then both b2 and b3 should be zero
+
+so h_0 > b_2 = b_3 =0
+h_a > b_2 !=0 and b_3 !=0
+
+F* = MSR(x2,x1x2|x1)/MSR(x1,x2,x1x2)
+MSR(x2,x1x2|x1) = SSR(x2|x1)+SSR(x1x2|x1,x2)/2
+=453.1+113/2
+=566.1/2 =283.05
+
+MSR(x1,x2,x1x2) = 909/60=15.2  
+
+F*= 283.05/15.2 =18.62 >F(0.95,2,60) = 3.15
+So we reject null hypothesis
+
+# Decision
+We conclude that there are different and not identical
+
+
+
+## c. Plot the estimated regression functions for the two populations and describe the nature of the differences between them.
+
+```{R}
+lm(y~x1,data=consultant[consultant$x2==0])
+lm(y~x1,data=consultant[consultant$x2==1])
+
+## there is difference in both the intercept and slope so wher x2=1 prices increase at a slower pace while x2=0 prices increase at a faster pace
+```
+
+# 9.10
+## a.Prepare separate stem-and-Ieaf plots of the test scores for each of the four newly developed aptitude tests. Are there any noteworthy features in these plots? Comment
+
+```{R}
+stem(apt_test$y,scale=10)
+stem(apt_test$x1,scale=10)
+stem(apt_test$x2,scale=10)
+stem(apt_test$x3,scale=10)
+stem(apt_test$x4,scale=10)
+
+## therse seems to be some outliers in x1,x3
+## notice that the scale is almost same for all the varibles- 
+
+plot(apt_test)
+# y and x3,y and x4 seems to have a strong relation - graph is almost linear
+
+## b. Obtain the scatter plot matrix. Also obtain the correlation matrix of the X variables. What do the scatter pi ots suggest about the nature of the functional relati onsli.ip between the response variable Y and each of the predictor variables? Are any serious multicollinearity problems evident? Explain.
+
+plot(apt_test)
+# y and x3,y and x4 seems to have a strong relation - graph is almost linear
+
+cor(apt_test)
+## from the scatter plot it is evidentn that x1 and x4 has a linear relation, also there seems to be a linear relation between x1, and x2,x3, although cor values are no those high but for  ,cor(x1,x4) =0.89, indicatiing that it might lead us to problems.Suggests that co-linear transformation might be needed
+
+## c. Fit the multiple regression function containing all four predictor variables as first-order terms. Does it appear that all predictor variables should be retained?
+
+apt_model=lm(y~x1+x2+x3+x4,data=apt_test)
+apt_model
+anova(apt_model)
+summary(apt_model)
+
+## From the above data, it seems that x2 need not be in the model, its pvalue indiate evidence against it
+
+## if we dig deeper x1 and x3 has very high SSR,it is explaining the major part of the error, so may be ther is a higher order in the form of x1 and x3 that could explain y in whole..we need to investigate
+```
+
+# 9.11
+## a. Using only first-order terms for the predictor variables in the pool of potential X variables,find the four best subset regression models according to the R~.p criterion.
+
+```{R}
+
+for(n1 in 1:4){
+print(paste(paste0("x",n1),summary(lm(y~get(paste0("x",n1)),data=apt_test))$adj.r.squared))
+}
+
+for(n1 in 1:3){
+    for(n2 in (n1+1):4){
+        print(paste(paste0("x",n1,",x",n2),(summary(lm(y~get(paste0("x",n1))+get(paste0("x",n2)),data=apt_test))$adj.r.squared)))
+    }}
+
+for(n1 in 1:2){
+    for(n2 in (n1+1):3){
+      for(n3 in (n2+1):4){
+        print(paste(paste0("x",n1,",x",n2,",x",n3),(summary(lm(y~get(paste0("x",n1))+get(paste0("x",n2))+get(paste0("x",n3)),data=apt_test))$adj.r.squared)))
+    }}}
+    
+summary(lm(y~x1+x2+x3+x4,data=apt_test))$adj.r.squared
+
+## from the above we have 
+## X1, X3, X4 = .9560
+## X1, X2, X3, X4 = .9555
+## X1, X3 = .9269
+## X1, X2, X3 = .9247
+
+```
+
+## b. Since there is relatively little difference in R~.p for the four best subset models, what other criteria would you use to help in the selection of the best model? Discuss.
+
+R^2_ap penalises models having large number of predictors,AIC and SBC penalises for adding a predictor, so they can be used additional to R^2_ap for model sel2ection
+
+# *9.18.
+
+## a. Using forward stepwise regression, find the best subset of predictor variables to predict job proficiency. Use ct limits of .05 and .lD for adding or deleting a variable, respectively.
+
+```{R}
+null=lm(y~1,data=apt_test)
+full=lm(y~.,data=apt_test)
+
+
+## forward
+## we follow the forward step regression model principles of ~ add those variables that have high F Values and Low P Values
+## stop when the F Values fails the significance level test
+
+add1(null,scope = c("x1","x2","x3","x4"),test="F")
+# x3 has highest F Value and lowest P Value
+add1(lm(y~x3,data=apt_test),scope = c("x1","x2","x4"),test="F")
+add1(lm(y~x3+x1,data=apt_test),scope = c("x2","x4"),test="F")
+# P values is lo so we add
+
+add1(lm(y~x3+x1+x4,data=apt_test),scope = c("x2"),test="F")
+## we dont add x2 here becasue the F values are below the signifiance level and a very high P-Value
+## the model is y~x3+x1+x4
+
+```
+## How does the best subset according to forward stepwise regression compare with the best subset according to the R~.p criterion obtained in Problem 9.11 a?
+
+step wise regression gives us only one model and we go with an assumption that this is the best,may not be the case, given the real world problems where a particualar variable can be vaery important.
+
+but using adjusted-R-Squared criteria, we have many options and we can choose according to the problem
+
+in this particualr case both the ways tells us that the y~x1+x2+x3 is a good model
+
+
+
+# *9.21.
+
+## Refer 10 Job proficiency Problems 9.10 and 9.1 X. To as.~ess iJ1lcrnally the predictive ability of the regression model identified in Problem 9.1 X. compute the PI?ESS statistic and COnlpare it to SSE. What docs this compaL"ison suggest about the validity of MSE as an indiC1uor of the predictive ability or the fitted mode!'?
+
+```{R}
+PRESS_v <- function(model) {
+  pr = residuals(model)/(1-lm.influence(model)$hat)
+  PRESS <- sum(pr^2)
+  return(PRESS)
+}
+
+model921=lm(y~x3+x1+x4,data=apt_test)
+PRESS_v(model921)
+anova(model921)
+```
+
+### from the above we can see that SSE < PRESS
+
+obviously SSE is calculated by the model that contains the data point, so the model is optimised for the data point, however PRESS is calculated by removing the data point and thus the data point becomes predictive quantity, and thus increasign the error probability
+
+### MSE
+
+MSE tells about the errors in the current data, for which the reduction of errors takes place.But to tell some thing about the predicive ability of the model using MSE may not be a good idea,Since it no way considers how the model reacts to a new data point
+
+as long as the predictive data is near to the fitted data,MSE works fine as predictive indicator, but for the data that is faraway from the fitted data MSE is a bad indicator.While model validating we need to consider that data which is faraway from the fitted data.so to sum up MSE is not so good as to eastimate the predictive ability of the model
+
+
+## a.Obtain I he correlation matrix of the X variables for the validation data set and compare it with that obtained in Problem 9.1 Ob for the model-building data set. Are the two cOl"L-elation mutrices reasonably similar?
+
+```{R}
+cor(apt_test)
+cor(apt_test_valdiate)
+## not reasonable similar as cor(x1,x2), cor(x2,x3),cor(x2,x4),cor(x3,x4) differ by a decimal point which is almost 10% difference
+```
+
+## b. Fit the Legression model identified in Problem 9.1 ga to the validation dl1ta set. Compare the estimated regression coefficients and their estimated standard deviations to those obtained in Problem 9.18a. Also compme the elTor mean squares ,md coefficients of multiple de-termination. Do the estimates for the validation dat,1 set appear to be reasonably similar to those obtuined for the model-building data set?
+
+```{R}
+model9221 = lm(y~x3+x1+x4,data=apt_test_valdiate)
+model9222 = lm(y~x3+x1+x4,data=apt_test)
+
+summary(model9221)
+summary(model9222)
+
+# Regression Co-efficients are almost similar with very less change in slope and intercept
+
+vcov(model9221)
+vcov(model9222)
+# diagonals give the SD of the regression coefficients
+
+#the standard devition has changed by a significant percent, with the validation modal having less ,indicatin that the error rate of validation set is low,thus the model is a good fit
+anova(model9221)
+anova(model9222)
+
+# MSE is higher for the validation data almost by 11% so falls our alpha =0.10 threshold
+
+# R^2 indicate both are good model fits - much cannot be said as both are high >0.9
+
+# Significant difference between the SSE of X3 and X4,Remember the model has x3 as main predictor
+```
+
+## c. Calculate the mean squared prediction errOL' in (9.20) and compare it to MSE obtained fmm the model-building dma sel. Is there evidence of a substantial bias problenl in MSE here? Is this conclusion consistent with your finding in Problem 9.21? Discuss.
+
+```{R}
+
+y1_pred=predict.lm(lm(y~x3+x1+x4,data=apt_test),apt_test_valdiate)
+mspr=sum((apt_test_valdiate$y-y1_pred)^2) / (nrow(apt_test_valdiate))
+print(mspr)
+
+# As in this case MSPR is low compared to SSE ,but a preliminary analysy show that much of the data is in similar range of the fitted model
+test112=rbind(apt_test,apt_test_valdiate)
+plot(test112)
+
+## the above figure which contains combination of both the test and validation data sho that .. the validation data is very close to the model data, thus our model is good for the prediction data
+```
+
+## d. Combine the model-building data set in Problem 9.10 with the valid1Ltion data set and fit the selected LegLession model to the combined data. AL'e the estimuted stundurd deviations of the estimated L'egL'ession coefficients appreciably leduced now from those obtained for the model-building data set?lm(y~x3+x1,data=test112)
+```{R}
+test112=rbind(apt_test,apt_test_valdiate)
+vcov(lm(y~x3+x1+x4,data=test112))
+vcov(model9222)
+
+# from above we can see that they reduced significantly
+```

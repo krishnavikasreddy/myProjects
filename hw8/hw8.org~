@@ -1,0 +1,53 @@
+SSE(X_1) 
+SSE(X_3|X_1)
+SSE(X_2|X_1, X_3)
+
+
+model => Y = B_0 + B_1 X_1 + B_3 X_3 + B_2 X_2 +e
+
+Hypothesis
+
+H_0 => B2 = 0
+H_a > B2 != 0
+
+F* = MSE(X_2|X_1, X_3)/MSE(X1,X2,X3)
+ = 6675/20532
+ = 0.325102279
+
+F(0.95,1,48) = 4.042652
+
+F* < F(0.95,1,48)
+Conclude H_0 
+
+P-value = 0.57123
+
+##Decision
+Can remove X_2
+
+
+SSR(X_1)+SSR(X_2|X_1) = 136366+5726 = 142092
+
+SSR(X_2)+SSR(X_1|X_2) = 11395+130697 = 142092
+
+
+
+Y~x1
+anova(lm(y~x1,data=grocerry))
+R^2_Y1 = SSR(X_1)/SSTO = 136366/3025770 = 0.0450
+
+anova(lm(y~x2,data=grocerry))
+R^2_Y2 = SSR(X_2)/SSTO =11395/3150741 = 0.00361661
+
+cor(grocerry)
+#R^2_12 = (0.084)^2 = 0.007056
+
+
+## R^2_{Y1|2} = SSE(X_1|X_2)/SSE(X_2)
+## = 130697/11395 = 11.46
+
+## R^2_{Y2|1} = SSE(X_2|X_1)/SSE(X_1) 
+## =5726/136366 = 0.041989939
+
+anova(model)
+## R^2 = 0.688
+## this means 68% of total sum of squares is explained by the the regression model(y~X1+X2+X3)

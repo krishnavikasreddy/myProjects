@@ -1,0 +1,257 @@
+---
+title: ''
+author: "Krishna Vikas"
+date: "October 27, 2016"
+output: html_document
+---
+
+## Loading Packages and Data
+
+```r
+library("data.table")
+crimes=fread("crimes.txt")
+setnames(crimes,c("crime","education"))
+crimes
+```
+
+```
+##     crime education
+##  1:  8487        74
+##  2:  8179        82
+##  3:  8362        81
+##  4:  8220        81
+##  5:  6246        87
+##  6:  9100        66
+##  7:  6561        68
+##  8:  5873        81
+##  9:  7993        74
+## 10:  7932        82
+## 11:  6491        75
+## 12:  6816        82
+## 13:  9639        78
+## 14:  4595        84
+## 15:  5037        82
+## 16:  4427        79
+## 17:  6226        78
+## 18: 10768        73
+## 19:  8335        77
+## 20: 12311        65
+## 21: 10104        77
+## 22: 10503        76
+## 23:  7562        79
+## 24:  8593        79
+## 25:  7133        78
+## 26: 10205        84
+## 27: 14016        78
+## 28:  5959        81
+## 29:  3764        89
+## 30:  4297        85
+## 31:  7562        77
+## 32:  4844        74
+## 33:  5777        80
+## 34:  3599        84
+## 35:  3219        88
+## 36: 11187        75
+## 37:  2105        77
+## 38:  6650        78
+## 39: 11371        61
+## 40:  4517        91
+## 41:  7348        83
+## 42:  5696        77
+## 43:  4995        85
+## 44:  9248        70
+## 45:  6860        88
+## 46:  9776        80
+## 47:  4280        82
+## 48: 11154        82
+## 49:  3442        82
+## 50:  9674        70
+## 51:  7309        64
+## 52:  4530        79
+## 53:  4017        83
+## 54:  7122        77
+## 55:  5689        76
+## 56:  6109        80
+## 57:  3343        84
+## 58:  5029        82
+## 59:  4330        81
+## 60:  5425        74
+## 61:  8769        81
+## 62:  6880        76
+## 63:  6538        78
+## 64:  6521        78
+## 65:  9423        79
+## 66:  9697        83
+## 67:  3805        79
+## 68:  3134        83
+## 69:  3433        81
+## 70:  2979        84
+## 71:  6836        64
+## 72:  5804        67
+## 73:  7986        75
+## 74: 10994        73
+## 75: 11322        77
+## 76:  8937        64
+## 77:  8807        75
+## 78: 11087        80
+## 79: 10355        83
+## 80:  7858        85
+## 81:  3632        91
+## 82:  8040        88
+## 83:  6981        83
+## 84:  7582        76
+##     crime education
+```
+
+## Creating the Modle
+
+```r
+model=lm(crimes$crime~crimes$education)
+summary(model)
+```
+
+```
+## 
+## Call:
+## lm(formula = crimes$crime ~ crimes$education)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -5278.3 -1757.5  -210.5  1575.3  6803.3 
+## 
+## Coefficients:
+##                  Estimate Std. Error t value Pr(>|t|)    
+## (Intercept)      20517.60    3277.64   6.260 1.67e-08 ***
+## crimes$education  -170.58      41.57  -4.103 9.57e-05 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 2356 on 82 degrees of freedom
+## Multiple R-squared:  0.1703,	Adjusted R-squared:  0.1602 
+## F-statistic: 16.83 on 1 and 82 DF,  p-value: 9.571e-05
+```
+
+# 1 (Use R) KNNL 2.31
+## Refer to Crime rate Problem 1.28
+### a. Set up the ANOVA table.
+
+```r
+aModel=anova(model)
+aModel
+```
+
+```
+## Analysis of Variance Table
+## 
+## Response: crimes$crime
+##                  Df    Sum Sq  Mean Sq F value    Pr(>F)    
+## crimes$education  1  93462942 93462942  16.834 9.571e-05 ***
+## Residuals        82 455273165  5552112                      
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+### b. Carry out the test in Problem 2.30a by means of the F test. Show the numerical equivalence of the two test statistics and decision rules. Is the P-value for the F test the same as that for the t test?
+
+- Test whether or not there is a linear relation between crime rate and percentage of high school graduates with \alpha = 0.01
+
+**Hypothesis**
+
+-   H<sub>0</sub> : &beta;<sub>1</sub> = 0
+-   H<sub>a</sub> : &beta;<sub>1</sub> &ne; 0
+
+**Parameters**
+
+-   &alpha; = 0.01
+-   n = 84 [nrow(crimes)]
+
+**F Test**
+
+-   For the given &alpha; and n we require that
+    -   F\* &le; F(0.99:1,82) = [qf(0.99,1,82)] = 6.95442 => conclude H<sub>0</sub>
+    -   F\* > F(0.99:1,82) = [qf(0.99,1,82)] = 6.95442 => conclude H<sub>a</sub>
+-   From anova Table we got F = 16.834 > 6.95442 thus conclude H<sub>a</sub>
+
+**Decision**
+
+-   Evidence prove that we can conclude H<sub>a</sub> thus we there is a relation between crimes and Education data
+
+#### Show the numerical equivalence of the two test statistics and decision rules.
+
+```r
+# Summarize the model
+summary_model=summary(model)
+
+# t value of the crime ~ education model
+t_value=coef(summary_model)[,"t value"]
+
+# f statistic value is 
+aModel[,"F value"][1]
+```
+
+```
+## [1] 16.83376
+```
+- Showing that F value is equal to t value                                                                          -   we know that
+
+-   F\* = \(\frac{MSR}{MSE}\)
+ -   MSR = \(\frac{SSR}{df_r}\) = \(\frac{SSR}{1}\) = b<sub>1</sub><sup>2</sup> $\sum$(X<sub>i</sub> - \(\overline{X}\))<sup>2</sup>
+ -   MSE = s<sup>2</sup>{b<sub>1</sub>} $\sum$(X<sub>i</sub> - \(\overline{X}\))<sup>2</sup>
+ -   F\* = \(\frac{b_1^2}{{s^2{b_1}}}\) = (t\*)<sup>2</sup>
+
+-   We need to know two points t\* represents a two tailed test while as F\* is a one tailed test
+ - (t\*(1-$\alpha$/2:n-1))<sup>2</sup> = f\*(1-$\alpha$,1,n-2)
+    
+- so derieving the values from the data we get  
+  - t value = -4.102897
+  - F value = 16.83376
+  => F value = (t value)<sup>2</sup>
+
+##### Decision rules
+
+- since |t*| > |t(0.99,83)| we rejected null hypothesis and said that there is a relation between crimes and education 
+- F test here also gave a similar decision here rejecting the null hypothesis
+
+### c. By how much is the total variation in crime rate reduced when percentage of high school graduates is introduced into the analysis? Is this a relatively large or small reduction?
+- We need to find out how much there is a variation along the regression line compared to total regresssion, this will give us how much the varition in crime rate has been reduced due to education[including education brings us the regression line]           
+
+
+```r
+summary_model$r.squared
+```
+
+```
+## [1] 0.170324
+```
+
+```r
+#this value is very close to 0 so we can say that this is relatively a small reduction
+```
+### d. Obtain r.
+- r is the square root of R<sup>2</sup>, with a sign as that of slope of the regression line.The sign indicates the movement of correlation in the positive or negative direction. 
+
+
+```r
+sign(model$coefficients[2]) * sqrt(summary_model$r.squared)
+```
+
+```
+## crimes$education 
+##       -0.4127033
+```
+
+```r
+## we can also use cor function (coeffecient of correlation)
+cor(crimes$crime,crimes$education)
+```
+
+```
+## [1] -0.4127033
+```
+
+-----------------------------
+# 2
+##2.32. Refer to Crime rate Problems 1.28 and 2.30. Suppose that the test in Problem 2.30a is to be carried out by means of a general linear test.
+## a. State the full and reduced models.
+
+## b. Obtain (1) SSE(F), (2) SSE(R), (3) dfF. (4) dfR, (5) test statistic F* for the general linear test, (6) decision rule.
+## c. Are the test statistic F* and the decision rule for the general linear test numerically equivalent to those in Problem 2.30a?

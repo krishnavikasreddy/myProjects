@@ -1,0 +1,13 @@
+Y_i = $\hat{\pi_i}$ = $\frac{1}{1+e^{-(\beta0+\beta1 X1+\beta2 X2+\beta3 X3)}}$
+
+
+alpha = .90
+applying bonferoni = 1-(1-alpha)/2g = 1- 0.1/4 = 0.975
+
+z(0.975) = qnorm(0.975) = 1.955
+
+b0= 0.0729
+sd{b0}=0.03038
+z(0.975)*sd{b0}  = 1.955*0.03038 = 0.059
+b0=[ 0.0729 \pm 0.059]
+ odds of increase for 1 yr increase is exp(bo) for 30 years it is exp(30[0.0729 \pm 0.1425])

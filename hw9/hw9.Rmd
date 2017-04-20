@@ -1,0 +1,364 @@
+---
+title: "hw9"
+author: "Krishna Vikas"
+date: "December 3, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{R}
+
+library(data.table)
+flu=fread("flue.txt")
+setnames(flu,c("y","x1","x2","x3"))
+
+```
+
+# 14.14
+## a
+###  Find the maximum likelihood estimates of b0,b1,b2,b3.State the fitted response function.
+```{R}
+m1=glm(y~.,family = binomial(link = "logit"),data=flu)
+m1
+
+```
+### State the Fitted Function
+Y<sub>i</sub> = \(\hat{\pi_i}\) = \(\frac{1}{1+e^{-(\beta0+\beta1 X1+\beta2 X2+\beta3 X3)}}\)
+
+## b
+### Obtain exp(b1),exp(b2), and exp(b3). Interpret these numbers.
+```{R}
+exp(m1$coefficients[2])
+# The odds of a person getting a flue shot (when X2 and X3 are constant in the model) is increased by 1.075 with each unit value increase in X1
+exp(m1$coefficients[3])
+# The odds of a person getting a flue shot (when X1 and X3 are constant in the model) is increased by 0.9057 with each unit value increase in X2
+exp(m1$coefficients[4])
+# The odds of a person getting a flue shot (when X1 and X2 are constant in the model) is increased by 1.54338 with each unit value increase in X3
+```
+## c
+### What is the estimated probability that male clients aged 55 with a health awareness index of 60 will receive a flu shot?
+```{R}
+## male so X3=1
+r1=predict.glm(m1,newdata =data.frame(x1=55,x2=60,x3=1))
+print(r1)
+r2=exp(r1)
+print(r2)
+
+## this is the probability
+y_i=r2/(1+r2)
+print(y_i)
+```
+# 14.20
+## Obtain jOint confidence intervals for the age odds ratio exp(30f:!1) for male clients whose ages differ by 30 years and for the health awareness index odds ratio exp(25f:!2) for male clients whose health awareness index differs by 25, with family confidence coefficient of approximately .90. Interpret your intervals. 
+
+g=2
+alpha = .1
+applying bonferoni = 1-[(alpha)/2g] = 1- 0.1/4 = 0.975 
+```{R}
+z095=qnorm(0.975) # 1.955
+sm1=summary(m1)
+b1=sm1$coefficients[2,1]
+sd_b1=sm1$coefficients[2,2]
+
+confint_b1=c((b1-(z095*sd_b1)),(b1+(z095*sd_b1)))
+
+#odds for 1 year change is 
+exp(confint_b1)
+#odds for 30 year change is
+exp(confint_b1*30)
+
+b2=sm1$coefficients[3,1]
+sd_b2=sm1$coefficients[3,2]
+
+confint_b2=c((b2-(z095*sd_b2)),(b2+(z095*sd_b2)))
+
+#odds for 1 unit change is 
+exp(confint_b2)
+#odds for 25 unit change is
+exp(confint_b2*25)
+
+## exp(30*b1) is the odds in favor of taking flueshot when the change in age is 30 given other parametes are constant
+
+## exp(25*b2) is the odds in favor of taking flueshot when the change in health awareness is 25 given other parametes are constant
+```
+## Use the Wald test to determine whether X3 , client gender, can be dropped from the regression model; use a = .05. State the alternatives, decision rule, and conclusion. What is the approximate P-value of the test? 
+
+### h0=> b3=0
+### ha=> b3 not 0
+### test statistic
+t= b3-0/sd{b3} = 0.43/0.52 = 0.832
+### decison rule
+alpha = 0.05 
+z(1-alpha/2)=qnorm(0.975) =1.96 = |Z|
+
+### decision rule
+if t <= |Z| => 0.832 < 1.96  and p Value is 0.40558
+#### conclude h0
+
+## Use the likelihood ratio test to determine whether X3 , client gender, can be dropped from the regression model; use a = .05. State the full and reduced models, decision rule, and conclusion. What is the approximate P-value of" the tesl? How does the resulthere com to that obtained I{)r the Wald test in p1ll1 (b)? 
+
+alpha =.05
+### h0=> b3=0 => reduced model => y~[1+exp(x1+x2)]^-1
+### ha => b3 not 0 => ful model => y~[1+exp(x1+x2+x3)]^-1
+
+### test statistic
+G^2 = -2[L(R)-L(F)]
+
+```{R}
+l_full=sum(flu$y*log(m1$fitted.values))+sum((1-flu$y)*log(1-m1$fitted.values))
+m2=glm(y~x1+x2,family = binomial(link = "logit"),data=flu)
+l_reduced=sum(flu$y*log(m2$fitted.values))+sum((1-flu$y)*log(1-m2$fitted.values))
+G_2 = -2*(l_reduced-l_full)
+print(G_2)
+```
+### df_F - df_r = (4-1) - (3-1) =1
+### Decision
+if G^2 <= X^2(0.95,1) then conclude h0
+=> qchisq(0.95,df=1) = 3.841459
+0.7022<3.84 => conclude h0
+
+### both wald and likelihood ratio gives thesame result
+
+## d
+### h0=> reduced model => y~[1+exp(x1+x2)] => b11=b22=b12 =0
+### ha=> full model => y~[1+exp(b0 x1+b1 x2+b11 x1^2+ b22 x2^2+ b12 x1*X2)]^-1
+
+### test statistic
+```{R}
+# reduced model is already defined as m2
+l_reduced=sum(flu$y*log(m2$fitted.values))+sum((1-flu$y)*log(1-m2$fitted.values))
+
+# fulll model
+m3=glm(y~poly(x1,2)+poly(x2,2)+x1*x2,family = binomial(link = "logit"),data=flu)
+l_full=sum(flu$y*log(m3$fitted.values))+sum((1-flu$y)*log(1-m3$fitted.values))
+G_2 = -2*(l_reduced-l_full)
+print(G_2) 
+```
+### df = df_f - df_r = (6-1) - (3-1) = 3
+
+if G^2 <= X^(0.95,3) => 1.533 < 1. 7.814 => conclude h0
+so the additional terms are not needed
+
+# 14.22
+## Use forward selection to decide which predictor variables enter inlo the regression model. Control the 0' risk at .10 at each stage. Which variables are entered into the regression model? 
+```{R}
+add1(glm(y~1,data = flu,family = binomial("logit")),scope=~x1+x2+x3,test = "Chisq",data=flu)
+# x1 goes in the first step
+add1(glm(y~x1,data = flu,family = binomial("logit")),scope=~x2+x3+.^2,test = "Chisq",data=flu)
+#x2 goes here
+add1(glm(y~x1+x2,data = flu,family = binomial("logit")),scope=~x3+.^2,test = "Chisq",data=flu)
+#nothing else
+```
+## Use backward elimination to decide which predictor variables can be dropped from the regres.<;ion model. Control the ex risk at .10 at each stage. Which variables are retained? How does this compare to your results in part (a)? 
+```{R}
+m123=glm(y~x1+x2+x3+poly(x1,2)+poly(x2,2)+x1*x2,data = flu,family = binomial("logit"))
+drop1(m123,test = "Chisq")
+#drop x1^2
+m123=glm(y~x1+x2+x3+poly(x2,2)+x1*x2,data = flu,family = binomial("logit"))
+drop1(m123,test = "Chisq")
+#drop x1*x2
+m123=glm(y~x1+x2+x3+poly(x2,2),data = flu,family = binomial("logit"))
+drop1(m123,test = "Chisq")
+#drop x3
+m123=glm(y~x1+x2+poly(x2,2),data = flu,family = binomial("logit"))
+drop1(m123,test = "Chisq")
+#x2^2 is dropped here
+m123=glm(y~x1+x2,data = flu,family = binomial("logit"))
+drop1(m123,test = "Chisq")
+#none here
+#part a is similar here - same terms
+```
+## Find the best model according to theAIC" criterion. How does this compare to y{)urresults in parts (a) and (b)?
+```{R}
+m123=glm(y~x1+x2+x3+poly(x1,2)+poly(x2,2)+x1*x2,data = flu,family = binomial("logit"))
+step(m123,direction = "backward",k=2)
+# Gives the same result as part a and b
+```
+## Find the best model according to rhe SBC" criterion. How does thi;; compare to yourresults in parts (a). (b) and (C)?
+```{R}
+m123=glm(y~1,data = flu,family = binomial("logit"))
+# k=log(n) is equvalent to sbc
+step(m123,scope=~x1+x2+x3+.^2,direction = "forward",k=log(nrow(flu)))
+# Gives the same result as part a and b
+```
+
+#14.28
+```{R}
+m8=glm(y~x1+x2,family = binomial(link = "logit"),data=flu)
+lgit_val=log(m8$fitted.values/(1-m8$fitted.values))
+o11=order(lgit_val) # order it by logit values
+#divide into 8 groups but the group has only 159 so lets keep the first 19 and rest all 20
+
+g1=lgit_val[o11[1:19]]
+g11=sum(m8$fitted.values[o11[1:19]])
+g10=19-sum(m8$fitted.values[o11[1:19]])
+o011=sum(flu$y[o11[1:19]])
+o010=19-o011
+
+g2=lgit_val[o11[20:39]]
+g21=sum(m8$fitted.values[o11[20:39]])
+g20=20-sum(m8$fitted.values[o11[20:39]])
+o21=sum(flu$y[o11[20:39]])
+o20=20-o21
+
+g3=lgit_val[o11[40:59]]
+g31=sum(m8$fitted.values[o11[40:59]])
+g30=20-sum(m8$fitted.values[o11[40:59]])
+o31=sum(flu$y[o11[40:59]])
+o30=20-o31
+
+g4=lgit_val[o11[60:79]]
+g41=sum(m8$fitted.values[o11[60:79]])
+g40=20-sum(m8$fitted.values[o11[60:79]])
+o41=sum(flu$y[o11[60:79]])
+o40=20-o41
+
+g5=lgit_val[o11[80:99]]
+g51=sum(m8$fitted.values[o11[80:99]])
+g50=20-g51
+o51=sum(flu$y[o11[80:99]])
+o50=20-o51
+
+g6=lgit_val[o11[100:119]]
+g61=sum(m8$fitted.values[o11[100:119]])
+g60=20-g61
+o61=sum(flu$y[o11[100:119]])
+o60=19-o61
+
+g7=lgit_val[o11[120:139]]
+g71=sum(m8$fitted.values[o11[120:139]])
+g70=20-g71
+o71=sum(flu$y[o11[120:139]])
+o70=20-o71
+
+g8=lgit_val[o11[140:159]]
+g81=sum(m8$fitted.values[o11[140:159]])
+g80=20-g81
+o81=sum(flu$y[o11[140:159]])
+o80=20-o81
+
+c11=c(mean(g1),mean(g2),mean(g3),mean(g4),mean(g5),mean(g6),mean(g7),mean(g8))
+
+c12=c(g11,g21,g31,g41,g51,g61,g71,g81)
+c13=c(g10,g20,g30,g40,g50,g60,g70,g80)
+
+plot(c11,c12)
+
+
+o111=c(o011,o21,o31,o41,o51,o61,o71,o81)
+o110=c(o010,o20,o30,o40,o50,o60,o70,o80)
+
+
+# the plot seems to sigmodial, with maximum slope at the center and tails spread out,slop
+```
+## b
+h0 => E{Y}= exp(b0+b1X1+b2X2+b3x3)/(1+exp(b0+b1x1+b2x2+b3x3))
+h1 => E{Y}!=exp(b0+b1X1+b2X2+b3x3)/(1+exp(b0+b1x1+b2x2+b3x3))
+## test statistic
+```{R}
+chisq_1=sum((o111-c12)^2/(c12))+sum((o110-c13)^2/(c13))
+```
+Df= 8(groups) -2 =6
+
+```{R}
+qchisq(0.95,6)
+```
+
+if chisq_1 <= qchisq(0.95,6) then conclude h0 else ha,in this case conclude ha
+```{R}
+#pvalue is  
+1-pchisq(12.72676,6)
+```
+
+#c
+```{R}
+plot(lowess(m8$fitted.values,rstandard(m8,type="deviance")))
+# the line is horizontal with almost zero intercept this indicate the model is correct, there are no significant deviations
+```
+
+
+#14.32
+##  For the logistic regression fit in Problem 14.14a. prepHre an Index plot of the dia elements of the estinwted hat matrix (14.S0). Usc the plot to idenlify any OUtlYi~Do~ observations. 
+```{R}
+h1=lm.influence(m1)
+plot(h1$hat)
+# there is outlier on the top right with a h1$hat >0.12
+```
+
+## b
+```{R}
+#stendised pearson residual
+spr1= residuals.glm(m1, "pearson")/sqrt(1 - lm.influence(m1)$hat)
+
+
+# delta chisquare statitic
+dcs1=spr1^2
+plot(dcs1)
+# there seems to be a outlier as we can see 
+
+#delta deviance statistic
+deltadev = lm.influence(m1)$hat * (spr1^2) + (residuals.glm(m1,type="deviance"))^2  
+plot(deltadev)
+
+#one outlier
+ck1=cooks.distance(m1)
+plot(ck1)
+# seems to be two outliers
+```
+
+
+
+#14.36
+# On the basis of the fitted regression func1ion in Problem 14.14a, obtain a confidence interval for the mean response n" for a female whose age is 65 and whose health awareness index is 50, with an approximate 90 percent family confidence coefficient. Interpret your intervals.
+
+### 
+
+```{R}
+p1=predict.glm(m1,newdata = data.frame(x1=65,x2=50,x3=0),se.fit = TRUE)
+#alpha =0.10
+ctval=qnorm(0.95)
+lw1=p1$fit-(ctval*p1$se.fit)
+up1=p1$fit+(ctval*p1$se.fit)
+
+
+prlw=exp(lw1)/(1+exp(lw1))
+prup=exp(up1)/(1+exp(up1))
+
+#confidence Intervals
+print(prlw)
+print(prup)
+
+#Interpretation
+## at the given X values there is a 90% chance that the Expected value can be in the range of the following
+```
+## b
+### cutoff 0.5
+```{R}
+cutoff<-seq(0.05,0.2, by=0.05)
+risk<-m1$fitted.values
+for(c1 in cutoff){
+   pred.shot<-(risk>c1)
+   enotd=table(pred.shot[flu$y==0])[2]/length(flu$y[flu$y==0])
+   ewithd= table(pred.shot[flu$y==1])[1]/length(flu$y[flu$y==1])
+   toterr=enotd+ewithd
+   eror=round(c(c1,enotd,ewithd,toterr),2)
+   print(eror)
+}
+```
+#c
+as we can see above when cutoff is 0.15 the error rate is minimum
+
+the balnce is not very equal but it is the best available so we can call it best,however we cannot say it is balanced
+```{R}
+library(ROCR)
+pred <- prediction(m1$fitted.values, labels=flu$y )
+perf <- performance(pred, "tpr", "fpr")
+plot(perf)
+abline(0,1)
+# as we can see the area is maximum at some where 0.8 
+```
+# d
+the best way is to have a seperate validation set and do the same calculation, if the values are near by then we can say that it is good for prediction

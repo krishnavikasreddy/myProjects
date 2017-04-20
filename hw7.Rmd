@@ -1,0 +1,306 @@
+---
+title: "hw7"
+author: "Krishna Vikas"
+date: "November 3, 2016"
+output: html_document
+---
+
+```{R}
+library("data.table")
+grocerry=fread("grocerry.txt")
+setnames(grocerry,c("y","x1","x2","x3"))
+```
+
+## x1 = numbers of cases shipped
+## x2 = indirect costs of total labour hours as %
+## x3 = week has a holiday or not
+## Y = total labour hours
+
+# 5.17
+## a. State the above in matrix notation.
+## our matrix becomes 
+## W=AY
+### where A  is
+```{R}
+A_matrix=t(matrix(c(1,1,1,1,-1,0,1,-1,-1),nrow=3,ncol=3))
+A_matrix
+W_matrix=matrix(c("w1","w2","w3"))
+Y_matrix=matrix(c("y1","y2","y3"))
+```
+## b. Find the expectation of the random vector W.
+### A is constant so E{A} = A
+### E{W} = E{AY}
+### E(W) = A Y{E(y_i)} ### matri containing the expected values of y_i
+
+##c. Find the variance-covariance matrix of W.
+### var(w) =var(AY) = A var(Y) A^T
+### var of y is the variance-covariance matrix of Y ,in which the diagnols are 1 and the rest are the covariance(y_i,y_j)
+
+# 6.9
+## a. Prepare separate stem-and-leaf plots for the number of cases shipped Xi I and the indirect cost of the total hours Xi2 . Are there any outlying cases present? Are there any gaps in the data?
+```{R}
+stem(grocerry$x1,scale=10)
+## When do just stem(grocerry$x1) we dont seem to be finding any outliers but if we increase the scale to 10,we can see that the data is mostly concentrated around the range of [24-30] stems and the other seems to be outliers falling out side the range
+
+##outliers are the leaves of stem 47,21
+## ouling gaps are [44-47] , [42-44], [32-35],[21-24] stems
+
+stem(grocerry$x2,scale=10)
+## here too most of the data seems to be present at 61-83 stems the data out side this range seems to be outliers as they show a gap in the range, the case of 41,90 and 96 seems to be outliers as they are far away from the mass of the data
+```
+## b. The cases are given in consecutive weeks. Prepare a time plot for each predictor variable.
+- What do the plots show?
+
+```{R}
+plot.ts(grocerry$x1)
+# Outliers
+## there seems to be no outliers
+# Sudden Shifts
+## there seems to be a suddent sift after 40, may be increse in orders or increase in salary or sudden influx of labour -- this needs to be investigated
+# Trends
+## overall trend seems to be decreasing over time, from 0-40 its decreasing , after the suddenn shift agfter 40 also the trend seems to be maintaing itself
+
+plot.ts(grocerry$x2)
+# Outliers
+## there seems to be outlier at [0-10] time series
+# Sudden shifts
+## there does not seem to be any shift
+# Trends
+## the overall trend seems to be moving in a range increasing and decreasing, there is some random variation
+## there are spikes repeating indicating that x2 is dependent on some thing probably x3 ~ labour costs are related to whether there is holiday or not in week ~ when ever there is a holiday there is peak and when ever there is a no holiday for a long time there seems to be a downward peak indicating increse in labour productivity
+
+plot.ts(grocerry$x3)
+# outliers
+## This is a categorical data so not outliers
+# trends
+## seems to be seasonal in nature that there is atleast a holiday within 10 time units 
+```
+
+c. Obtain the scatter plot matrix and the correlation matrix. What information do these diag-
+nostic aids provide here?
+```{R}
+pairs(grocerry)
+# Relationship between variables
+## there seems to be some sort of reltion between x1,x2 and y but the data is grouped indicating that it needs log or some other transformation
+## x3 is a different case because it a categorical variable, y and x3 seems to have a strong relationship, all low values of y has x3 as 0 and all high values of y has 1 indicating a strong relation
+## while x3 and x2,x1 cannot be concluded because they have a random variation
+
+# Groups in the data
+## there are groups in clusters between the data, this groups might be indicating some thing, so further investigation needed
+
+# Others
+## outliers are present in almost every relation, which needed to be taken care of
+## there seems be to no trends
+cor(grocerry)
+# corelation matrix signifies the relation between two varibales and in this case it supports the concluson of our scatter plot findings. The relation is high for y and x3 and other case below 0.5
+# but the advantage is as the varibales increases corelation matri  is easy to look and work on
+```
+
+# 6.10. Refer to Grocery retailer Problem 6.9.
+## a. Fit regression model (6.5) to the data for three predictor variables. State the estimated regression function. How are b l , b2 , and b 3 interpreted here?
+```{R}
+#model is y=b0+b1*x1+b2*x2+b3*x3
+model=lm(y~x1+x2+x3,data=grocerry)
+summary(model)
+
+# How are b l , b2 , and b 3 interpreted here?
+## when x2 and x3 are kept constant, for a given x1 y changes by b1
+## when x1 and x3 are kept constant, for a given x2 y changes by b2
+## when x1 and x2 are kept constant, for a given x3 y changes by b3
+```
+## b. Obtain the residuals and prepare a,box plot of the residuals. What information does this plot provide?
+```{R}
+residuals_model=resid(model)
+boxplot(residuals_model)
+# What information does this plot provide?
+## there are no outliers in residuals
+### indicate that e has a acceptable variance which is near constant
+### mean is 0 and the upper tail and lower tail of the box plot is symmetric which indicate that residuals are close to normality with constant variance
+
+```
+## c. Plot the residuals against Y, X I, X 2 , X 3 , and X I X2 on separate graphs. Also prepare a normal probability plot. Interpret the plots and su~arize your findings.
+```{R}
+plot(grocerry$x1,residuals_model)
+# Presence of outliers -residuals at points 300 and less than -200
+# Constant variance is not visisble as the terms have more variance at 25000 - 30000 range
+# non linearity of regression model ~ clustering of data around 25,000 -30000 range
+
+plot(grocerry$x2,residuals_model)
+# presence of outliers ~ residuals at extremes
+# clustering of data indicating that linear model may not be the best fit
+
+plot(grocerry$x3,residuals_model)
+#difficult to infer anything from such a plot
+# Categorical variable would result in such a plot
+
+y_hat_values=fitted(model)
+plot(y_hat_values,residuals_model)
+# the speread of the data indicates that the observations have a good range thus reducing our standard error, thus increasing  our prediction and confidence intervals
+
+x1_x2=c(grocerry$x1*grocerry$x2)
+plot(x1_x2,residuals_model)
+## This indicate normal distribution,x1 and x2 is not in the model thus we cannot conclude anything
+```
+## d. Prepare a time plot of the residuals. Is there any indication.o1:hat the error terms are correlated?
+```{R}
+plot.ts(residuals_model)
+## There is no linear relation in the plot,indicating that error terms are not increasing or decreasing by time, thus not correalted.There also seems to be no cyclic or seasonal relation
+```
+# 6.11
+## a. Test whether there is a regression relation, using level of significance .05. State the alternatives, decision nJle, and conclusion. What does yom' test result imply about fJl' f32, and fJ3? What is the P-value of the test
+```{R}
+summary(model)
+nrow(grocerry)
+qt(df=52-4,0.95)
+```
+### Null hypothesis => b0=b1=b2=b3=0
+### Alternative => b0,b1,b2,b3 != 0
+### f-statistic=35.34
+##qf(0.95,4,48) = 2.56 
+### f-statistic > f(0.95) => conclude alternative
+### p value is 3.316e-12 which is very small and supports our decision
+### conclusion is there is relation between Y and the given predictors
+
+
+### t(beta0) > t(0.95,df=52-4)  
+### t(beta1) > t(0.95,df=52-4)
+### t(beta2) < t(0.95,df=52-4)  
+### t(beta3) > t(0.95,df=52-4)  
+
+## b. Estimate fJl and fJ3jointly by the Bonferroni procedure, using a 95 percent family confidence coefficient. Interpret your results.
+### g=2(beta1,beta3)
+### p=4(beta0,beta1,beta2,beta3)
+### alpha=0.05
+### CI= bk+-Bs{bk}
+### B=t(1-alpha/2g;n-p)=t(0.9875;48)=2.313
+
+### so ci of b1=[−0.000054832,0.001629032]
+### Ci of b3=[489.57,756.4232]
+
+### Interpret your results
+#### there is a 95% probability that the range aboove contains beta1 and beta3 
+
+
+
+## c. Calculate the coefficient of multiple determination R'l. How is this measm-e interpl-eted hel-e?
+
+### Multiple R-squared:  0.6883,	Adjusted R-squared:  0.6689 
+
+### indicate the amount of variation of Y explained by the predictor variables to the total variation in Y(Ratio)
+
+#6.12
+## Obtain the family of estimates using a 95 percent family confidence coefficient. Employ the Working-Hotelling 01' the Bonfemmi p1"ocedure, whichevel' is mOl-e efficient.
+
+### g=5 1-alpha/2g = 0.995
+
+### p=4 n-p=48
+
+### if we use bonferroni our ci will be calculated using t(0.995,48) 2.68
+
+### if we use working-hotelling w=sqrt(g*F(1-alpha,g,n-p)) = sqrt(qf(0.95,df1=5,df2=48)*5) =3.470241
+
+### so bonferroni is better because it gives us tighter interval 
+
+###s^2{predmean} = (x_h)T * s^2{B} * (x_h)
+
+```{R}
+xmatrix=cbind(1,grocerry$x1,grocerry$x2,grocerry$x3)
+mse=20532
+s2b=solve(t(xmatrix)%*%xmatrix)*mse
+
+calculate_bonferroni_interval=function(s2b,bon_t_value,x_value1){
+  
+x_value=matrix(c(1,x_value1))
+
+x_value1=data.frame(t(x_value1))
+setnames(x_value1,c("x1","x2","x3"))
+y_pred=predict.lm(model,x_value1)
+
+s2_y_hat=t(x_value)%*%s2b%*%x_value
+s2_y=sqrt(s2_y_hat)
+cat(y_pred-((bon_t_value)*s2_y),"<= E{Y} <=",y_pred+((bon_t_value)*s2_y))
+}
+calculate_bonferroni_interval(s2b,2.68,c(302000,7.2,0))
+calculate_bonferroni_interval(s2b,2.68,c(245000,7.4,0))
+calculate_bonferroni_interval(s2b,2.68,c(280000,6.9,0))
+calculate_bonferroni_interval(s2b,2.68,c(350000,7.0,0))
+calculate_bonferroni_interval(s2b,2.68,c(295000,6.7,1))
+```
+
+## b. FOI' the data in Problem 6.9 on which the regression fit is based, would you consider a shipment of 400,000 cases with an indirect percentage of 7.20 on a nonholiday week to be within the scope of the model? What about a shipment of 400,000 cases with an indil-ect percentage of9.9 on a nonholiday week? Support your answers by p1"eparing a l-elevant plot.
+
+### for the first one -- YES
+```{R}
+boxplot(c(grocerry$x1,400000))
+## clearly 400000 is not an outlier, it is in within the upper range
+```
+### for the second one -- NO
+```{R}
+boxplot(c(grocerry$x2,9.9))
+## 9.9 is an outlier
+boxplot(c(grocerry$x2,7.20))
+## 7.2 is not
+```
+
+# 6.13
+## Management desires p1-edictions of the handling times for these shipments so that the actual handling times can be compared with the pl-edicted times to determine whether any are out of line. Develop the needed predictions, using the most efficient approach and a family confidence coefficient of 95 percent.
+
+## Obtain the family of estimates using a 95 percent family confidence coefficient. Employ the Working-Hotelling 01' the Bonfemmi p1"ocedure, whichevel' is mOl-e efficient.
+
+### g=4 1-alpha/2g = 0.99375
+
+### p=4 n-p=48
+
+### if we use bonferroni our ci will be calculated using t(0.99375,48) 2.59
+
+### if we use working-hotelling w=sqrt(g*F(1-alpha,g,n-p)) = sqrt(qf(0.95,df1=4,df2=48)*4) =3.203274
+
+### so bonferroni is better because it gives us tighter interval 
+
+###s^2{predmean} = (x_h)T * s^2{B} * (x_h)
+
+```{R}
+mse=20532
+s2b=solve(t(xmatrix)%*%xmatrix)*mse
+
+calculate_bonferroni_interval_mse=function(s2b,bon_t_value,x_value1,mse){
+  
+x_value=matrix(c(1,x_value1))
+
+x_value1=data.frame(t(x_value1))
+setnames(x_value1,c("x1","x2","x3"))
+y_pred=predict.lm(model,x_value1)
+
+s2_y_hat=(t(x_value)%*%s2b%*%x_value)+mse
+s2_y=sqrt(s2_y_hat)
+cat(y_pred-((bon_t_value)*s2_y),"<= Y_h <=",y_pred+((bon_t_value)*s2_y))
+}
+calculate_bonferroni_interval_mse(s2b,2.59,c(230000,7.5,0),mse)
+calculate_bonferroni_interval_mse(s2b,2.59,c(250000,7.3,0),mse)
+calculate_bonferroni_interval_mse(s2b,2.59,c(280000,7.1,0),mse)
+calculate_bonferroni_interval_mse(s2b,2.59,c(340000,6.9,0),mse)
+
+```
+
+
+# 6.14
+
+## a. Obtain a 95 percent pl-ediction interval fOl' the mean handling time fOl' these shipments.
+```{R}
+x_value=matrix(c(282000,7.1,0))
+x_value1=data.frame(t(x_value))
+x_value=matrix(c(1,282000,7.1,0))
+setnames(x_value1,c("x1","x2","x3"))
+y_pred=predict.lm(model,x_value1)
+
+s2_y_hat=(t(x_value)%*%s2b%*%x_value)+(mse/3)
+s2_y=sqrt(s2_y_hat)
+print(s2_y)
+t_value=qt(0.975,48)
+print(t_value)
+cat(y_pred-((t_value)*s2_y),"<= Y_H <=",y_pred+((t_value)*s2_y))
+```
+## b. Convert the inteJ:val obtained in part (a) into a 95 percent prediction interval for the total labol' hours for the three shipments.
+```{R}
+cat((y_pred-((t_value)*s2_y))*3,"<= Y_H*3 <=",(y_pred+((t_value)*s2_y))*3)
+```

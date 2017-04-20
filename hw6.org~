@@ -1,0 +1,49 @@
+*Hypothesis*
+- H_0 : \beta_1 = 0
+- H_a : \beta_1 \ne 0
+
+*Parameters*
+- \alpha = 0.01
+- n = 84 [nrow(crimes)]
+
+*F Test*
+- For the given \alpha and n we require that
+  - F* \le F(0.99:1,82) = [qf(0.99,1,82)] = 6.95442 => conclude H_0
+  - F* > F(0.99:1,82) = [qf(0.99,1,82)] = 6.95442 => conclude H_a
+- From anova Table we got F = 16.834 > 6.95442 thus conclude H_a
+
+*Decision*
+- Evidence prove that we can conclude H_a thus we there is a relation between crimes and Education data
+
+
+
+
+- we know that
+  - F* = $\frac{MSR}{MSE}$
+    - MSR = $\frac{SSR}{df_r}$ = $\frac{SSR}{1}$ = b_1^2 \sum(X_i - $\overline{X}$)^2
+    - MSE = s^2{b_1} \sum(X_i - $\overline{X}$)^2
+  - F* = $\frac{b_1^2}{{s^2{b_1}}}$ = (t*)^2
+ 
+- We need to know two points t* represents a two tailed test while as F* is a one tailed test
+  -(t*(1-\alpha/2:n-1))^2 = f*(1-\alpha,1,n-2)
+
+
+*Hypothesis*
+- H_o : \beta_1 = 0
+- H_a : \beta_1 \ne 0
+
+
+- Full model(we reject Null hypothesis => H_a is true => \beta_1 \ne 0)
+  - CrimeRate(Y_i) = \beta_0 + \beta_1 * Education(X_i) + \epsilon_i
+- Reduced Model (We assume that Null Hypothesis is True => \beta_1 = 0)
+  - CrimeRate(Y_i) = \beta_0 + \epsilon_i
+
+- SSE(F) = \sum\epsilon_i^2{F} = \sum(Y - \beta_0 - \beta_1 * X_i)^2 = \sum(Y - $\hat{Y}$)^2 = {aModel[2,"Sum Sq"]} = 455273165
+
+- SSE(R) = \sum\epsilon_i^2{R} = \sum(Y_i- \beta_0)^2 = \sum(Y_i - $\bar{Y})^2 = SSTO = {sum(aModel["Sum Sq"])} = 548736108
+
+- df_F = we have two variables that determine our Y = \beta_0 and \beta_1 so =  n-2
+
+- df_R = we have only one variable that affect our Y = \beta_0 = n-1
+
+

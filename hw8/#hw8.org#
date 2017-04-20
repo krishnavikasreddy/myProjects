@@ -1,0 +1,114 @@
+SSE(X_1) 
+SSE(X_3|X_1)
+SSE(X_2|X_1, X_3)
+
+
+model => Y = B_0 + B_1 X_1 + B_3 X_3 + B_2 X_2 +e
+
+Hypothesis
+
+H_0 => B2 = 0
+H_a > B2 != 0
+
+F* = MSE(X_2|X_1, X_3)/MSE(X1,X2,X3)
+ = 6675/20532
+ = 0.325102279
+
+F(0.95,1,48) = 4.042652
+
+F* < F(0.95,1,48)
+Conclude H_0 
+
+P-value = 0.57123
+
+##Decision
+Can remove X_2
+
+
+SSR(X_1)+SSR(X_2|X_1) = 136366+5726 = 142092
+
+SSR(X_2)+SSR(X_1|X_2) = 11395+130697 = 142092
+
+
+
+Y~x1
+summary(lm(y~x1,data=grocerry))
+R^2_Y1 = SSR(X_1)/SSTO = 136366/3025770 = 0.04312
+## amount of error explained by x1
+
+summary(lm(y~x2,data=grocerry))
+R^2_Y2 = SSR(X_2)/SSTO =11395/3150741 = 0.00361661
+## amount of error explained by x2
+
+summary(lm(x1~x2,data=grocerry))
+#R^2_12  = 0.007207
+## explains the correlation between x1 and x2
+
+## R^2_{Y1|2} = SSR(X_1|X_2)/SSE(X_2)
+## = 130697/3150741 = 0.041481353
+## amount of error explained by x1 after left over in the model with x2
+
+## R^2_{Y2|1} = SSR(X_2|X_1)/SSE(X_1) 
+## =5726/3025770 = 0.001892411
+
+## amount of error explained by x2 after left over in the model with x1
+
+##R^2_{Y2|13} = SSR(X2|X1,X3)/SSR(X1,X3,X2) = 0.006773005
+
+
+anova(model)
+## R^2 = 0.688
+## this means 68% of total sum of squares is explained by the the regression model(y~X1+X2+X3)
+
+
+
+
+x_matirx=cor(grocerry)[2:4,2:4]
+y_matrix=cor(grocerry)[1,2:4]
+
+b_matrix=solve(x_matirx,y_matrix)
+
+Y=BX =>
+here B=b,
+
+summary(lm(x1~x2,data=grocerry))
+
+summary(lm(x2~x3,data=grocerry))
+
+summary(lm(x1~x3,data=grocerry))
+
+## the co-efficients before standardisation and after standardisation only differ by scale -- hence can be said the same as before
+
+
+
+
+
+> plot(consultant$x1,consultant$y)
+> abline(lm(y~x1,data=consultant[consultant$x2==1]),col="green")
+> abline(lm(y~x1,data=consultant[consultant$x2==0]),col="red")
+
+
+\alpha = 0.05
+
+model
+y=b_0+b_1 x1+b_2 x2+b3 x_1*x_2
+
+if there is no relation then both b2 and b3 should be zero
+
+so h_0 > b_2 = b_3 =0
+h_a > b_2 !=0 and b_3 !=0
+
+F* = MSR(x2,x1x2|x1)/MSR(x1,x2,x1x2)
+MSR(x2,x1x2|x1) = SSR(x2|x1)+SSR(x1x2|x1,x2)/2
+=453.1+113/2
+=566.1/2 =283.05
+
+MSR(x1,x2,x1x2) = 909/60=15.2  
+
+F*= 283.05/15.2 =18.62 >F(0.95,2,60) = 3.15
+So we reject null hypothesis
+# Decision
+We conclude that there are different and not identical
+
+
+
